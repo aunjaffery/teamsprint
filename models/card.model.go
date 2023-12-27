@@ -7,4 +7,5 @@ type Card struct {
 	Description string             `json:"description"`
 	Kanban      primitive.ObjectID `json:"kanban"`
 	Status      string             `json:"status"`
+	Assignee    primitive.ObjectID `json:"assignee"`
 }
