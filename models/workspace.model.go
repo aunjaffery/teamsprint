@@ -7,3 +7,9 @@ type Workspace struct {
 	Creator primitive.ObjectID   `json:"creator"`
 	Members []primitive.ObjectID `json:"members"`
 }
+type WsRsp struct {
+	ID      primitive.ObjectID   `json:"id" bson:"_id"`
+	Name    string               `json:"name,omitempty"`
+	Creator primitive.ObjectID   `json:"creator"`
+	Members []primitive.ObjectID `json:"members"`
+}

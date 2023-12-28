@@ -6,11 +6,12 @@ import (
 	"os"
 )
 
-type EnvVars struct {
-	DNS string
+type envVars struct {
+	DNS       string
+	JwtSecret string
 }
 
-var Envs EnvVars
+var Envs envVars
 
 func LoadConfig(filename string) {
 	err := godotenv.Load(filename)
@@ -19,7 +20,9 @@ func LoadConfig(filename string) {
 	}
 
 	mongouri := os.Getenv("MONGOURI")
-	Envs = EnvVars{
-		DNS: mongouri,
+	jwt_secret := os.Getenv("JWT_SECRET")
+	Envs = envVars{
+		DNS:       mongouri,
+		JwtSecret: jwt_secret,
 	}
 }
