@@ -22,6 +22,56 @@ func getUserId(local interface{}) (id primitive.ObjectID, err error) {
 	return user_bson, nil
 }
 
+func WorkspaceKbns(c *fiber.Ctx) error {
+	auth_id, err := getUserId(c.Locals("user_id"))
+	if err != nil {
+		return c.Status(501).JSON(fiber.Map{
+			"success": false,
+			"msg":     "Error! cannot load user",
+		})
+	}
+	var wsCol *mongo.Collection = config.GetColl("workspace")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := []bson.M{
+		{
+			"$match": bson.M{
+				"members": auth_id,
+			},
+		},
+		{
+			"$lookup": bson.M{
+				"from":         "kanban",
+				"localField":   "_id",
+				"foreignField": "workspace",
+				"as":           "kanban",
+			},
+		},
+		{
+			"$project": bson.M{
+				"kanban.members":   0,
+				"kanban.workspace": 0,
+			},
+		},
+	}
+	cur, err := wsCol.Aggregate(ctx, filter)
+	if err != nil {
+		return c.Status(501).JSON(fiber.Map{
+			"success": false,
+			"msg":     "Error! Cannot fetch workspace",
+		})
+	}
+	var ws []models.WsKbnRsp
+	err = cur.All(ctx, &ws)
+	if err != nil {
+		fmt.Println("Error during cursor:", err)
+	}
+	return c.Status(200).JSON(fiber.Map{
+		"success": false,
+		"msg":     "Member added successfully",
+		"ws":      ws,
+	})
+}
 func AddWsMember(c *fiber.Ctx) error {
 	auth_id, err := getUserId(c.Locals("user_id"))
 	if err != nil {
@@ -76,6 +126,7 @@ func AddWsMember(c *fiber.Ctx) error {
 	})
 }
 func FindWorkspace(c *fiber.Ctx) error {
+	time.Sleep(time.Second * 2)
 	auth_id, err := getUserId(c.Locals("user_id"))
 	if err != nil {
 		return c.Status(501).JSON(fiber.Map{
@@ -108,8 +159,8 @@ func FindWorkspace(c *fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(fiber.Map{
 		"success": true,
-		"msg":     "Workspace created successfully",
-		"data":    ws,
+		"msg":     "Workspaces fetched successfully",
+		"ws":      ws,
 	})
 
 }

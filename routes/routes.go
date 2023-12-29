@@ -25,6 +25,7 @@ func SetupRoutes(app *fiber.App) {
 	ws := app.Group("/ws")
 	ws.Post("/createworkspace", utils.DeserializeUser, handler.CreateWorkspace)
 	ws.Get("/findworkspace", utils.DeserializeUser, handler.FindWorkspace)
+	ws.Get("/workspaceKbns", utils.DeserializeUser, handler.WorkspaceKbns)
 	ws.Post("/addWsMem", utils.DeserializeUser, handler.AddWsMember)
 
 	// kanban routes
