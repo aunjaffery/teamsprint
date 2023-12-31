@@ -45,7 +45,7 @@ func FetchKanban(c *fiber.Ctx) error {
 			"msg":     "Error! Cannot fetch kanban",
 		})
 	}
-	kbns := []models.Kanban{}
+	kbns := []models.KanbanRsp{}
 	err = cursor.All(ctx, &kbns)
 	if err != nil {
 		return c.Status(501).JSON(fiber.Map{
@@ -61,6 +61,7 @@ func FetchKanban(c *fiber.Ctx) error {
 }
 
 func CreateKanban(c *fiber.Ctx) error {
+	time.Sleep(time.Second)
 	auth_id, err := getUserId(c.Locals("user_id"))
 	if err != nil {
 		return c.Status(501).JSON(fiber.Map{
@@ -85,10 +86,11 @@ func CreateKanban(c *fiber.Ctx) error {
 	mem := []primitive.ObjectID{}
 	mem = append(mem, auth_id)
 	newKbn := models.Kanban{
-		Title:     kbn.Title,
-		Creator:   auth_id,
-		Members:   mem,
-		Workspace: kbn.Workspace,
+		Title:      kbn.Title,
+		Creator:    auth_id,
+		Members:    mem,
+		Visibility: kbn.Visibility,
+		Workspace:  kbn.Workspace,
 	}
 	fmt.Printf("%+v\n", newKbn)
 	// kbnCol.Find(ctx, bson.M{})
@@ -101,7 +103,7 @@ func CreateKanban(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		"success": false,
+		"success": true,
 		"msg":     "Kanban added successfully",
 	})
 }

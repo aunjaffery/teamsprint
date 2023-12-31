@@ -71,6 +71,7 @@ func TokenValidation(c *fiber.Ctx) error {
 
 }
 func Login(c *fiber.Ctx) error {
+	time.Sleep(time.Second * 2)
 	fmt.Println("-- Login user called --")
 	var userCol *mongo.Collection = config.GetColl("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
