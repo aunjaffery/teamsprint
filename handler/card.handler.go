@@ -78,7 +78,7 @@ func FetchCards(c *fiber.Ctx) error {
 			"msg":     "Error! Cannot fetch kanban",
 		})
 	}
-	cards := []models.Card{}
+	cards := []models.CardRsp{}
 	err = cursor.All(ctx, &cards)
 	if err != nil {
 		return c.Status(501).JSON(fiber.Map{
@@ -96,7 +96,7 @@ func CreateCard(c *fiber.Ctx) error {
 	var cardCol *mongo.Collection = config.GetColl("cards")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	var crd models.Card
+	var crd models.CreateCard
 	err := c.BodyParser(&crd)
 	fmt.Println("body ->")
 	fmt.Printf("%+v\n", crd)
@@ -107,12 +107,10 @@ func CreateCard(c *fiber.Ctx) error {
 			"msg":     "Error! cannot load body",
 		})
 	}
-	newCard := models.Card{
-		Title:       crd.Title,
-		Description: crd.Description,
-		Kanban:      crd.Kanban,
-		Status:      crd.Status,
-		Assignee:    crd.Assignee,
+	newCard := models.CreateCard{
+		Title:  crd.Title,
+		Kanban: crd.Kanban,
+		Status: crd.Status,
 	}
 	fmt.Printf("%+v\n", newCard)
 	_, err = cardCol.InsertOne(ctx, newCard)
