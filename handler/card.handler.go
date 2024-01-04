@@ -52,46 +52,6 @@ func CardStatus(c *fiber.Ctx) error {
 		"msg":     "Card updated successfully",
 	})
 }
-func FetchCards(c *fiber.Ctx) error {
-	// check if user is member of workspace or kanban.
-	// according to visibilty of kanban...
-	kbn_id := c.Params("kbn_id")
-	fmt.Println("params -->", kbn_id)
-	var cardCol *mongo.Collection = config.GetColl("cards")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	obj_kbn_id, err := primitive.ObjectIDFromHex(kbn_id)
-	if err != nil {
-		return c.Status(501).JSON(fiber.Map{
-			"success": false,
-			"msg":     "Error! Invalid kanban id",
-		})
-	}
-	filter := bson.M{
-		"kanban": obj_kbn_id,
-	}
-	cursor, err := cardCol.Find(ctx, filter)
-	if err != nil {
-		fmt.Println(err)
-		return c.Status(501).JSON(fiber.Map{
-			"success": false,
-			"msg":     "Error! Cannot fetch kanban",
-		})
-	}
-	cards := []models.CardRsp{}
-	err = cursor.All(ctx, &cards)
-	if err != nil {
-		return c.Status(501).JSON(fiber.Map{
-			"success": false,
-			"msg":     "Error! cannot load cards",
-		})
-	}
-	return c.Status(200).JSON(fiber.Map{
-		"success": false,
-		"msg":     "Cards fetched successfully",
-		"data":    cards,
-	})
-}
 func CreateCard(c *fiber.Ctx) error {
 	var cardCol *mongo.Collection = config.GetColl("cards")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

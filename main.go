@@ -16,6 +16,12 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(logger.New())
-	routes.SetupRoutes(app)
+	api := app.Group("/api")
+	routes.SetupRoutes(api)
+	// app.Use(func(c *fiber.Ctx) error {
+	// 	return c.JSON(fiber.Map{
+	// 		"msg": "App is alive and healthy",
+	// 	})
+	// })
 	log.Fatal(app.Listen(":8088"))
 }

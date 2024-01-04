@@ -25,20 +25,9 @@ func TokenValidation(c *fiber.Ctx) error {
 	var userCol *mongo.Collection = config.GetColl("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	pipeline := []bson.M{
-		{
-			"$match": bson.M{
-				"_id": auth_id,
-			}}, {
-			"$lookup": bson.M{
-				"from":         "workspace",
-				"localField":   "_id",
-				"foreignField": "members",
-				"as":           "ws",
-			}},
-		{"$project": bson.M{"ws.members": 0}},
-	}
-	cur, err := userCol.Aggregate(ctx, pipeline)
+	var foundUser models.User
+	filter := bson.M{"_id": auth_id}
+	err = userCol.FindOne(ctx, filter).Decode(&foundUser)
 	if err != nil {
 		log.Println("db query error")
 		log.Println(err)
@@ -46,13 +35,6 @@ func TokenValidation(c *fiber.Ctx) error {
 			"success": false,
 			"msg":     "Error! Invalid credentials",
 		})
-	}
-	var foundUser models.LoginRsp
-	if cur.Next(ctx) {
-		err := cur.Decode(&foundUser)
-		if err != nil {
-			fmt.Println("Error during cursor:", err)
-		}
 	}
 	token, err := utils.Generate_JWT(foundUser.ID.Hex())
 	if err != nil {
@@ -71,7 +53,6 @@ func TokenValidation(c *fiber.Ctx) error {
 
 }
 func Login(c *fiber.Ctx) error {
-	time.Sleep(time.Second * 2)
 	fmt.Println("-- Login user called --")
 	var userCol *mongo.Collection = config.GetColl("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -84,20 +65,9 @@ func Login(c *fiber.Ctx) error {
 			"msg":     "Error! cannot load user",
 		})
 	}
-	pipeline := []bson.M{
-		{
-			"$match": bson.M{
-				"email": user.Email,
-			}}, {
-			"$lookup": bson.M{
-				"from":         "workspace",
-				"localField":   "_id",
-				"foreignField": "members",
-				"as":           "ws",
-			}},
-		{"$project": bson.M{"ws.members": 0}},
-	}
-	cur, err := userCol.Aggregate(ctx, pipeline)
+	var foundUser models.User
+	filter := bson.M{"email": user.Email}
+	err = userCol.FindOne(ctx, filter).Decode(&foundUser)
 	if err != nil {
 		log.Println("db query error")
 		log.Println(err)
@@ -106,15 +76,6 @@ func Login(c *fiber.Ctx) error {
 			"msg":     "Error! Invalid credentials",
 		})
 	}
-	var foundUser models.LoginRsp
-	if cur.Next(ctx) {
-		err := cur.Decode(&foundUser)
-		if err != nil {
-			fmt.Println("Error during cursor:", err)
-		}
-	}
-	fmt.Printf("%+v\n", foundUser)
-
 	if foundUser.Password != user.Password {
 		return c.Status(501).JSON(fiber.Map{
 			"success": false,
